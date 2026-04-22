@@ -14,7 +14,7 @@ def print_banner():
     """Tampilkan banner ASCII"""
     banner = """
 \033[96m
-$$$$$$$$\ $$\                                           $$\            $$$$$$\  $$\       $$$$$$\ 
+ $$$$$$$$\ $$\                                           $$\            $$$$$$\  $$\       $$$$$$\ 
 \__$$  __|$$ |                                          $$ |          $$  __$$\ $$ |      \_$$  _|
    $$ |   $$$$$$$\   $$$$$$\   $$$$$$\   $$$$$$\   $$$$$$$ | $$$$$$$\ $$ /  \__|$$ |        $$ |  
    $$ |   $$  __$$\ $$  __$$\ $$  __$$\  \____$$\ $$  __$$ |$$  _____|$$ |      $$ |        $$ |  
@@ -25,23 +25,28 @@ $$$$$$$$\ $$\                                           $$\            $$$$$$\  
 \033[0m
                                                                                                   
 \033[93m═══════════════════════════════════════════════════════════════════════════════════════════\033[0m
-\033[92m                    THREADS SEARCH TOOL - PROFESSIONAL SCRAPER v1.0\033[0m
+\033[92m                    THREADS SEARCH TOOL - PROFESSIONAL SCRAPER v2.0\033[0m
 \033[93m═══════════════════════════════════════════════════════════════════════════════════════════\033[0m
     """
     print(banner)
 
+def clear_lines(count):
+    """Hapus N baris sebelumnya"""
+    for _ in range(count):
+        sys.stdout.write('\033[A\033[K')
+    sys.stdout.flush()
+
 def print_progress_bar(current, total, bar_length=50):
-    """Tampilkan progress bar"""
-    progress = current / total
+    """Tampilkan progress bar tanpa carriage return"""
+    progress = current / total if total > 0 else 0
     arrow = '=' * int(round(progress * bar_length))
     spaces = ' ' * (bar_length - len(arrow))
     
     percent = int(round(progress * 100))
     
-    sys.stdout.write(f'\r\033[94mProgress: [{arrow}{spaces}] {percent}% ({current}/{total})\033[0m')
-    sys.stdout.flush()
+    print(f'\033[94mProgress: [{arrow}{spaces}] {percent}% ({current}/{total})\033[0m')
 
-def search_threads(keyword, total_posts=50, sessionid=None, consecutive_empty_limit=5):
+def search_threads(keyword, total_posts=50, sessionid=None):
     url = "https://www.threads.com/graphql/query"
     
     headers = {
@@ -61,15 +66,14 @@ def search_threads(keyword, total_posts=50, sessionid=None, consecutive_empty_li
     all_posts = []
     seen_ids = set()
     page = 0
-    posts_per_request = 10
-    consecutive_empty = 0
-    
-    total_requests = (total_posts + posts_per_request - 1) // posts_per_request
+    error_count = 0
+    output_lines = 0  # Track berapa baris output yang perlu dihapus
     
     print(f"\n\033[96m🔍 Mencari keyword: \033[93m'{keyword}'\033[0m")
-    print(f"\033[96m📊 Target: \033[93m{total_posts} post\033[0m\n")
+    print(f"\033[96m📊 Target: \033[93m{total_posts} post\033[0m")
+    print(f"\033[96m💡 Script akan berjalan terus hingga target terpenuhi (Ctrl+C untuk stop)\033[0m")
     
-    while len(all_posts) < total_posts and page < total_requests:
+    while len(all_posts) < total_posts:
         if page == 0:
             cursor = None
         else:
@@ -119,25 +123,33 @@ def search_threads(keyword, total_posts=50, sessionid=None, consecutive_empty_li
         variables_json = json.dumps(variables, separators=(',', ':'))
         payload = f"{base_payload}&variables={urllib.parse.quote(variables_json)}&doc_id=25588584157484270"
         
-        # Clear current line and print status
-        sys.stdout.write(f'\r\033[K\033[94m📄 Halaman {page + 1}/{total_requests} (cursor: {cursor})...\033[0m')
-        sys.stdout.flush()
-        
         try:
-            response = requests.post(url, headers=headers, cookies=cookies, data=payload)
+            response = requests.post(url, headers=headers, cookies=cookies, data=payload, timeout=30)
             response.raise_for_status()
-            result = response.json()
+            
+            try:
+                result = response.json()
+            except json.JSONDecodeError:
+                error_count += 1
+                page += 1
+                continue
             
             if 'errors' in result:
-                print(f"\n\033[91m❌ Error: {result['errors']}\033[0m")
-                break
+                error_count += 1
+                page += 1
+                continue
             
-            search_results = result.get('data', {}).get('searchResults', {})
-            edges = search_results.get('edges', [])
+            try:
+                search_results = result.get('data', {}).get('searchResults', {})
+                edges = search_results.get('edges', [])
+            except Exception:
+                error_count += 1
+                page += 1
+                continue
             
             if not edges:
-                print("\n\033[93m⚠️ Tidak ada post lagi.\033[0m")
-                break
+                page += 1
+                continue
             
             new_posts_count = 0
             duplicate_count = 0
@@ -145,13 +157,19 @@ def search_threads(keyword, total_posts=50, sessionid=None, consecutive_empty_li
             for edge in edges:
                 if len(all_posts) >= total_posts:
                     break
-                    
-                thread = edge.get('node', {}).get('thread', {})
-                thread_items = thread.get('thread_items', [])
                 
-                for item in thread_items:
-                    post = item.get('post', {})
-                    if post and len(all_posts) < total_posts:
+                try:
+                    thread = edge.get('node', {}).get('thread', {})
+                    thread_items = thread.get('thread_items', [])
+                    
+                    for item in thread_items:
+                        if len(all_posts) >= total_posts:
+                            break
+                            
+                        post = item.get('post', {})
+                        if not post:
+                            continue
+                        
                         post_id = post.get('pk', '')
                         
                         if post_id in seen_ids:
@@ -162,36 +180,35 @@ def search_threads(keyword, total_posts=50, sessionid=None, consecutive_empty_li
                         all_posts.append(simplified_post)
                         seen_ids.add(post_id)
                         new_posts_count += 1
+                        
+                except Exception:
+                    continue
             
-            # Clear line and show result
-            sys.stdout.write(f'\r\033[K')
+            # Hapus output sebelumnya (kecuali halaman pertama)
+            if output_lines > 0:
+                clear_lines(output_lines)
+            
+            # Print hasil baru
             if duplicate_count > 0:
-                print(f"\033[92m✅ {len(edges)} thread (new: {new_posts_count}, duplicate: {duplicate_count}, total: {len(all_posts)}/{total_posts})\033[0m")
+                print(f"\033[92m✅ Halaman {page + 1}: {len(edges)} thread (new: {new_posts_count}, dup: {duplicate_count}, total: {len(all_posts)}/{total_posts})\033[0m")
             else:
-                print(f"\033[92m✅ {len(edges)} thread (total: {len(all_posts)}/{total_posts})\033[0m")
+                print(f"\033[92m✅ Halaman {page + 1}: {len(edges)} thread (total: {len(all_posts)}/{total_posts})\033[0m")
             
-            # Update progress bar
             print_progress_bar(len(all_posts), total_posts)
-            print()  # New line after progress bar
+            output_lines = 2  # 2 baris: hasil + progress
             
-            if new_posts_count == 0:
-                consecutive_empty += 1
-                if consecutive_empty >= consecutive_empty_limit:
-                    print(f"\n\033[93m⚠️ Tidak ada post baru dalam {consecutive_empty_limit} halaman berturut-turut. Menghentikan pencarian.\033[0m")
-                    break
-            else:
-                consecutive_empty = 0
-            
-            page += 1
-            
-        except requests.exceptions.RequestException as e:
-            print(f"\n\033[91m❌ Request error: {e}\033[0m")
-            break
-        except json.JSONDecodeError as e:
-            print(f"\n\033[91m❌ JSON decode error: {e}\033[0m")
-            break
+        except requests.exceptions.RequestException:
+            error_count += 1
+        except Exception:
+            error_count += 1
+        
+        page += 1
     
-    print(f"\n\033[96m✨ Selesai! Mengambil {len(all_posts)} post unik.\033[0m")
+    # Hapus output terakhir sebelum print summary
+    if output_lines > 0:
+        clear_lines(output_lines)
+    
+    print(f"\n\033[96m✨ Selesai! Mengambil {len(all_posts)} post unik dari {page} halaman ({error_count} error dilewati)\033[0m")
     return all_posts
 
 def extract_important_fields(post):
@@ -435,7 +452,7 @@ def main():
             print(f"\n\033[91m❌ Tidak ada hasil ditemukan untuk keyword '{keyword}'\033[0m")
         
         print("\n" + "\033[93m" + "="*60 + "\033[0m")
-        again = input("\n\033[96mIngin mencari keyword lain? (y/n): \033[0m").strip().lower()
+        again = input("\033[96mIngin mencari keyword lain? (y/n): \033[0m").strip().lower()
         if again != 'y':
             print("\n\033[92m👋 Terima kasih telah menggunakan Threads Search Tool!\033[0m")
             break
