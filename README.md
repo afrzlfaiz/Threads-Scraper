@@ -1,19 +1,19 @@
 # Threads Scraper
 
-Tool Python untuk mencari postingan di Threads berdasarkan keyword, lalu menyimpan hasilnya ke `JSON`, `CSV`, atau `Excel`.
+Python tool for searching Threads posts by keyword, then saving the results to `JSON`, `CSV`, or `Excel`.
 
-Project ini memakai request ke endpoint internal Threads, sehingga proses scraping membutuhkan cookie `sessionid` dari akun yang sedang login.
+This project uses requests to an internal Threads endpoint, so scraping requires the `sessionid` cookie from a logged-in account.
 
-## Fitur
+## Features
 
-- Pencarian post Threads berdasarkan keyword
-- Target jumlah post bisa ditentukan sendiri
-- Menghindari duplikasi post berdasarkan ID
-- Menyimpan hasil ke format `JSON`, `CSV`, `XLSX`, atau semuanya sekaligus
-- Mendukung pencarian beberapa keyword dalam satu sesi
-- Tersedia script setup dan start untuk Windows dan Linux/macOS
+- Search Threads posts by keyword
+- Set your own target number of posts
+- Avoid duplicate posts based on ID
+- Save results as `JSON`, `CSV`, `XLSX`, or all formats at once
+- Search multiple keywords in one session
+- Includes setup and start scripts for Windows and Linux/macOS
 
-## Struktur Project
+## Project Structure
 
 ```text
 scrape-threads/
@@ -30,18 +30,18 @@ scrape-threads/
 
 - Python 3.9+
 - `pip`
-- Koneksi internet
-- Cookie `sessionid` dari akun Threads yang aktif login
+- Internet connection
+- `sessionid` cookie from a logged-in Threads account
 
-## Instalasi
+## Installation
 
-### Opsi 1: langsung dengan pip
+### Option 1: install directly with pip
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### Opsi 2: pakai script bawaan
+### Option 2: use the included script
 
 Windows:
 
@@ -56,7 +56,7 @@ chmod +x setup.sh start.sh
 ./setup.sh
 ```
 
-## Cara Menjalankan
+## How to Run
 
 Windows:
 
@@ -70,43 +70,43 @@ Linux/macOS:
 ./start.sh
 ```
 
-Atau langsung lewat Python:
+Or run it directly with Python:
 
 ```bash
 python threads_scraper.py
 ```
 
-## Cara Mengambil `sessionid`
+## How to Get `sessionid`
 
-1. Login ke `https://www.threads.com`
-2. Buka Developer Tools di browser (`F12`)
-3. Masuk ke tab `Application` atau `Storage`
-4. Buka bagian `Cookies`
-5. Pilih domain `https://www.threads.com`
-6. Cari cookie bernama `sessionid`
-7. Copy nilainya lalu paste ke program saat diminta
+1. Log in to `https://www.threads.com`
+2. Open your browser's Developer Tools (`F12`)
+3. Go to the `Application` or `Storage` tab
+4. Open the `Cookies` section
+5. Select the `https://www.threads.com` domain
+6. Find the cookie named `sessionid`
+7. Copy its value and paste it into the program when prompted
 
-## Alur Penggunaan
+## Usage Flow
 
-Saat program dijalankan, Anda akan diminta:
+When the program starts, you will be asked to:
 
-1. Memasukkan `sessionid`
-2. Memasukkan keyword pencarian
-3. Menentukan jumlah post yang ingin diambil
-4. Memilih format penyimpanan hasil
+1. Enter `sessionid`
+2. Enter a search keyword
+3. Set how many posts to collect
+4. Choose the output format
 
-Contoh:
+Example:
 
 ```text
-Masukkan session ID: <sessionid_anda>
-Keyword pencarian: saham
-Jumlah post yang ingin diambil: 50
-Pilihan simpan: 4
+Enter session ID: <your_sessionid>
+Search keyword: stocks
+Number of posts to collect: 50
+Save option: 4
 ```
 
 ## Output
 
-File hasil akan disimpan di folder `results/` dengan pola nama:
+Output files are saved in the `results/` folder using this naming pattern:
 
 ```text
 threads_<keyword>_<jumlah>posts.json
@@ -114,7 +114,7 @@ threads_<keyword>_<jumlah>posts.csv
 threads_<keyword>_<jumlah>posts.xlsx
 ```
 
-Contoh:
+Example:
 
 ```text
 results/threads_saham_50posts.json
@@ -122,9 +122,9 @@ results/threads_saham_50posts.csv
 results/threads_saham_50posts.xlsx
 ```
 
-## Data yang Disimpan
+## Saved Data
 
-Setiap post umumnya berisi field berikut:
+Each post usually contains these fields:
 
 - `id`
 - `code`
@@ -144,14 +144,14 @@ Setiap post umumnya berisi field berikut:
 - `mentions`
 - `tag`
 
-## Contoh Format JSON
+## JSON Example
 
 ```json
 {
   "id": "3874761242607351150",
   "code": "DXF6tIfD_Vu",
   "date": "2026-04-14 07:45:56",
-  "caption": "Contoh isi post",
+  "caption": "Example post content",
   "like_count": 271,
   "reply_count": 332,
   "repost_count": 20,
@@ -162,44 +162,44 @@ Setiap post umumnya berisi field berikut:
 
 ## Dependencies
 
-Isi `requirements.txt`:
+Contents of `requirements.txt`:
 
 - `requests`
 - `pandas`
 - `openpyxl`
 
-## Catatan Penting
+## Important Notes
 
-- Scraper ini bergantung pada endpoint internal Threads yang bisa berubah kapan saja.
-- Jika `sessionid` tidak valid atau sudah expired, request bisa gagal atau hasil kosong.
-- Tidak semua keyword selalu mengembalikan jumlah post sesuai target.
-- Program akan berhenti lebih awal jika tidak menemukan post baru dalam beberapa halaman berturut-turut.
-- Gunakan tool ini secara bertanggung jawab dan sesuai ketentuan platform yang berlaku.
+- This scraper depends on internal Threads endpoints that may change at any time.
+- If `sessionid` is invalid or expired, requests may fail or return empty results.
+- Not every keyword will always return as many posts as the target requests.
+- The program will stop early if it cannot find new posts across several consecutive pages.
+- Use this tool responsibly and in accordance with the platform's terms.
 
 ## Troubleshooting
 
-### `Python tidak ditemukan`
+### `Python not found`
 
-Pastikan Python sudah terpasang dan bisa diakses dari terminal:
+Make sure Python is installed and available from the terminal:
 
 ```bash
 python --version
 ```
 
-### Gagal install dependency
+### Failed to install dependencies
 
-Coba upgrade `pip`, lalu install ulang:
+Try upgrading `pip`, then install again:
 
 ```bash
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### Tidak ada hasil pencarian
+### No search results
 
-Periksa hal berikut:
+Check the following:
 
-- `sessionid` masih valid
-- keyword memang punya hasil di Threads
-- koneksi internet stabil
-- Threads tidak mengubah endpoint atau format respons
+- `sessionid` is still valid
+- the keyword actually has results on Threads
+- your internet connection is stable
+- Threads has not changed the endpoint or response format

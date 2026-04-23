@@ -7,11 +7,11 @@ import os
 import sys
 
 def clear_screen():
-    """Bersihkan layar terminal"""
+    """Clear the terminal screen"""
     os.system('cls' if os.name == 'nt' else 'clear')
 
 def print_banner():
-    """Tampilkan banner ASCII"""
+    """Display the ASCII banner"""
     banner = """
 \033[96m
  $$$$$$$$\ $$\                                           $$\            $$$$$$\  $$\       $$$$$$\ 
@@ -31,13 +31,13 @@ def print_banner():
     print(banner)
 
 def clear_lines(count):
-    """Hapus N baris sebelumnya"""
+    """Remove the previous N lines"""
     for _ in range(count):
         sys.stdout.write('\033[A\033[K')
     sys.stdout.flush()
 
 def print_progress_bar(current, total, bar_length=50):
-    """Tampilkan progress bar tanpa carriage return"""
+    """Display a progress bar without carriage return"""
     progress = current / total if total > 0 else 0
     arrow = '=' * int(round(progress * bar_length))
     spaces = ' ' * (bar_length - len(arrow))
@@ -67,11 +67,11 @@ def search_threads(keyword, total_posts=50, sessionid=None):
     seen_ids = set()
     page = 0
     error_count = 0
-    output_lines = 0  # Track berapa baris output yang perlu dihapus
+    output_lines = 0  # Track how many output lines need to be cleared
     
-    print(f"\n\033[96m🔍 Mencari keyword: \033[93m'{keyword}'\033[0m")
-    print(f"\033[96m📊 Target: \033[93m{total_posts} post\033[0m")
-    print(f"\033[96m💡 Script akan berjalan terus hingga target terpenuhi (Ctrl+C untuk stop)\033[0m")
+    print(f"\n\033[96m🔍 Searching keyword: \033[93m'{keyword}'\033[0m")
+    print(f"\033[96m📊 Target: \033[93m{total_posts} posts\033[0m")
+    print(f"\033[96m💡 The script will keep running until the target is reached (Ctrl+C to stop)\033[0m")
     
     while len(all_posts) < total_posts:
         if page == 0:
@@ -184,18 +184,18 @@ def search_threads(keyword, total_posts=50, sessionid=None):
                 except Exception:
                     continue
             
-            # Hapus output sebelumnya (kecuali halaman pertama)
+            # Remove the previous output (except on the first page)
             if output_lines > 0:
                 clear_lines(output_lines)
             
-            # Print hasil baru
+            # Print the latest result
             if duplicate_count > 0:
-                print(f"\033[92m✅ Halaman {page + 1}: {len(edges)} thread (new: {new_posts_count}, dup: {duplicate_count}, total: {len(all_posts)}/{total_posts})\033[0m")
+                print(f"\033[92m✅ Page {page + 1}: {len(edges)} threads (new: {new_posts_count}, dup: {duplicate_count}, total: {len(all_posts)}/{total_posts})\033[0m")
             else:
-                print(f"\033[92m✅ Halaman {page + 1}: {len(edges)} thread (total: {len(all_posts)}/{total_posts})\033[0m")
+                print(f"\033[92m✅ Page {page + 1}: {len(edges)} threads (total: {len(all_posts)}/{total_posts})\033[0m")
             
             print_progress_bar(len(all_posts), total_posts)
-            output_lines = 2  # 2 baris: hasil + progress
+            output_lines = 2  # 2 lines: result + progress
             
         except requests.exceptions.RequestException:
             error_count += 1
@@ -204,11 +204,11 @@ def search_threads(keyword, total_posts=50, sessionid=None):
         
         page += 1
     
-    # Hapus output terakhir sebelum print summary
+    # Remove the last output before printing the summary
     if output_lines > 0:
         clear_lines(output_lines)
     
-    print(f"\n\033[96m✨ Selesai! Mengambil {len(all_posts)} post unik dari {page} halaman ({error_count} error dilewati)\033[0m")
+    print(f"\n\033[96m✨ Done! Collected {len(all_posts)} unique posts from {page} pages ({error_count} errors skipped)\033[0m")
     return all_posts
 
 def extract_important_fields(post):
@@ -261,13 +261,13 @@ def extract_mentions(text):
 def save_to_json(posts, filename):
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(posts, f, indent=2, ensure_ascii=False)
-    print(f"\033[92m💾 Data disimpan ke {filename}\033[0m")
+    print(f"\033[92m💾 Data saved to {filename}\033[0m")
 
 def save_to_csv(posts, filename):
     import csv
     
     if not posts:
-        print("\033[93mTidak ada data untuk disimpan ke CSV\033[0m")
+        print("\033[93mNo data to save to CSV\033[0m")
         return
     
     with open(filename, 'w', newline='', encoding='utf-8-sig') as f:
@@ -304,17 +304,17 @@ def save_to_csv(posts, filename):
                 post.get('url', '')
             ])
     
-    print(f"\033[92m💾 Data disimpan ke {filename}\033[0m")
+    print(f"\033[92m💾 Data saved to {filename}\033[0m")
 
 def save_to_excel(posts, filename):
     try:
         import pandas as pd
     except ImportError:
-        print("\033[91m❌ Library pandas tidak terinstall. Install dengan: pip install pandas openpyxl\033[0m")
+        print("\033[91m❌ pandas is not installed. Install it with: pip install pandas openpyxl\033[0m")
         return
     
     if not posts:
-        print("\033[93mTidak ada data untuk disimpan ke Excel\033[0m")
+        print("\033[93mNo data to save to Excel\033[0m")
         return
     
     data = []
@@ -355,12 +355,12 @@ def save_to_excel(posts, filename):
             adjusted_width = min(max_length + 2, 50)
             worksheet.column_dimensions[column_letter].width = adjusted_width
     
-    print(f"\033[92m💾 Data disimpan ke {filename}\033[0m")
+    print(f"\033[92m💾 Data saved to {filename}\033[0m")
 
 def save_posts(posts, keyword):
-    """Menu untuk menyimpan hasil scraping"""
+    """Menu for saving scraping results"""
     if not posts:
-        print("\n\033[93m❌ Tidak ada data untuk disimpan.\033[0m")
+        print("\n\033[93m❌ No data to save.\033[0m")
         return
     
     print("\n" + "\033[93m" + "="*60 + "\033[0m")
@@ -372,7 +372,7 @@ def save_posts(posts, keyword):
     print("4. All formats (JSON + CSV + Excel)")
     print("5. Skip saving")
     
-    save_choice = input("\n\033[96mPilihan (1/2/3/4/5): \033[0m").strip()
+    save_choice = input("\n\033[96mChoose (1/2/3/4/5): \033[0m").strip()
     
     if save_choice == '1':
         filename = f"results/threads_{keyword}_{len(posts)}posts.json"
@@ -390,51 +390,51 @@ def save_posts(posts, keyword):
         save_to_json(posts, json_file)
         save_to_csv(posts, csv_file)
         save_to_excel(posts, excel_file)
-        print(f"\n\033[92m✅ Semua file telah disimpan!\033[0m")
+        print(f"\n\033[92m✅ All files have been saved!\033[0m")
     elif save_choice == '5':
-        print("\033[93mData tidak disimpan.\033[0m")
+        print("\033[93mData was not saved.\033[0m")
     else:
-        print("\033[91mPilihan tidak valid, data tidak disimpan.\033[0m")
+        print("\033[91mInvalid choice, data was not saved.\033[0m")
 
 def main():
     clear_screen()
     print_banner()
     
-    # Input session ID sekali di awal
-    print("\n\033[93m⚠️  PENTING: Anda perlu mengambil session ID dari browser:\033[0m")
-    print("   1. Login ke threads.com")
-    print("   2. Buka Developer Tools (F12)")
-    print("   3. Pergi ke tab Application/Storage → Cookies → https://www.threads.com")
-    print("   4. Cari cookie 'sessionid' dan copy nilainya\n")
+    # Ask for the session ID once at startup
+    print("\n\033[93m⚠️  IMPORTANT: You need to get the session ID from your browser:\033[0m")
+    print("   1. Log in to threads.com")
+    print("   2. Open Developer Tools (F12)")
+    print("   3. Go to Application/Storage → Cookies → https://www.threads.com")
+    print("   4. Find the 'sessionid' cookie and copy its value\n")
     
-    sessionid = input("\033[96m🔑 Masukkan session ID: \033[0m").strip()
+    sessionid = input("\033[96m🔑 Enter session ID: \033[0m").strip()
     if not sessionid:
-        print("\n\033[91m❌ Session ID wajib diisi!\033[0m")
+        print("\n\033[91m❌ Session ID is required!\033[0m")
         return
     
-    print("\n\033[92m✅ Session ID berhasil disimpan!\033[0m\n")
+    print("\n\033[92m✅ Session ID saved successfully!\033[0m\n")
     
-    # Loop untuk multiple keywords
+    # Loop for multiple keywords
     while True:
         print("\033[93m" + "="*60 + "\033[0m")
-        keyword = input("\033[96m🔎 Keyword pencarian (atau 'exit' untuk keluar): \033[0m").strip()
+        keyword = input("\033[96m🔎 Search keyword (or 'exit' to quit): \033[0m").strip()
         
         if keyword.lower() == 'exit':
-            print("\n\033[92m👋 Terima kasih telah menggunakan Threads Search Tool!\033[0m")
+            print("\n\033[92m👋 Thanks for using Threads Search Tool!\033[0m")
             break
         
         if not keyword:
-            print("\033[93m⚠️ Keyword tidak boleh kosong!\033[0m\n")
+            print("\033[93m⚠️ Keyword cannot be empty!\033[0m\n")
             continue
         
         try:
-            total = int(input("\033[96m📝 Jumlah post yang ingin diambil: \033[0m"))
+            total = int(input("\033[96m📝 Number of posts to collect: \033[0m"))
             if total <= 0:
                 total = 50
-                print(f"\033[93m⚠️ Menggunakan default: {total} post\033[0m")
+                print(f"\033[93m⚠️ Using default: {total} posts\033[0m")
         except ValueError:
             total = 50
-            print(f"\033[93m⚠️ Menggunakan default: {total} post\033[0m")
+            print(f"\033[93m⚠️ Using default: {total} posts\033[0m")
         
         print("\n" + "\033[93m" + "="*60 + "\033[0m")
         
@@ -442,29 +442,29 @@ def main():
         clear_screen()
         print_banner()
         
-        # Jalankan scraping
+        # Run the scraper
         results = search_threads(keyword, total, sessionid)
         
         if results:
-            print(f"\n\033[92m✅ Berhasil mengambil {len(results)} post untuk keyword '{keyword}'\033[0m")
+            print(f"\n\033[92m✅ Successfully collected {len(results)} posts for keyword '{keyword}'\033[0m")
             save_posts(results, keyword)
         else:
-            print(f"\n\033[91m❌ Tidak ada hasil ditemukan untuk keyword '{keyword}'\033[0m")
+            print(f"\n\033[91m❌ No results found for keyword '{keyword}'\033[0m")
         
         print("\n" + "\033[93m" + "="*60 + "\033[0m")
-        again = input("\033[96mIngin mencari keyword lain? (y/n): \033[0m").strip().lower()
+        again = input("\033[96mSearch another keyword? (y/n): \033[0m").strip().lower()
         if again != 'y':
-            print("\n\033[92m👋 Terima kasih telah menggunakan Threads Search Tool!\033[0m")
+            print("\n\033[92m👋 Thanks for using Threads Search Tool!\033[0m")
             break
         else:
             clear_screen()
             print_banner()
-            print("\n\033[92m✅ Session ID masih tersimpan!\033[0m\n")
+            print("\n\033[92m✅ Session ID is still saved!\033[0m\n")
 
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("\n\n\033[93m⚠️ Program dihentikan oleh user. Sampai jumpa!\033[0m")
+        print("\n\n\033[93m⚠️ Program stopped by user. See you!\033[0m")
     except Exception as e:
-        print(f"\n\033[91m❌ Terjadi error: {e}\033[0m")
+        print(f"\n\033[91m❌ An error occurred: {e}\033[0m")

@@ -2,41 +2,41 @@
 title Threads Scraper
 color 0A
 
-:: Set ke direktori script
+:: Set script directory
 cd /d "%~dp0"
 
-:: Cek folder results
+:: Check results folder
 if not exist "results" mkdir results
 
-:: Cek file utama
+:: Check main file
 if not exist "threads_scraper.py" (
-    echo [ERROR] File threads_scraper.py tidak ditemukan!
+    echo [ERROR] File threads_scraper.py not found!
     echo.
     pause
     exit /b 1
 )
 
-:: Jalankan program
+:: Run program
 echo ========================================
-echo    MEMULAI THREADS SCRAPER...
+echo    STARTING THREADS SCRAPER...
 echo ========================================
 echo.
 python threads_scraper.py
 
-:: Jika error
+:: If error
 if errorlevel 1 (
     echo.
     echo ========================================
     echo    PROGRAM ERROR!
     echo ========================================
     echo.
-    echo Periksa kembali:
-    echo 1. Koneksi internet
-    echo 2. Session ID yang dimasukkan
-    echo 3. Dependencies (jalankan setup.bat)
+    echo Check the following:
+    echo 1. Internet connection
+    echo 2. The entered Session ID
+    echo 3. Dependencies (run setup.bat)
     echo.
 )
 
 echo.
-echo Tekan tombol apapun untuk keluar...
+echo Press any key to exit...
 pause >nul

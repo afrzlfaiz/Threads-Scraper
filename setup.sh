@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Warna untuk output
+# Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -11,59 +11,59 @@ echo "   THREADS SCRAPER - SETUP SCRIPT"
 echo "========================================"
 echo ""
 
-# Cek Python
-echo "[1/4] Mengecek Python..."
+# Check Python
+echo "[1/4] Checking Python..."
 if command -v python3 &>/dev/null; then
-    echo -e "${GREEN}[OK] Python ditemukan${NC}"
+    echo -e "${GREEN}[OK] Python found${NC}"
     PYTHON_CMD="python3"
 elif command -v python &>/dev/null; then
-    echo -e "${GREEN}[OK] Python ditemukan${NC}"
+    echo -e "${GREEN}[OK] Python found${NC}"
     PYTHON_CMD="python"
 else
-    echo -e "${RED}[ERROR] Python tidak ditemukan!${NC}"
-    echo "Silakan install Python terlebih dahulu"
+    echo -e "${RED}[ERROR] Python not found!${NC}"
+    echo "Please install Python first"
     exit 1
 fi
 $PYTHON_CMD --version
 echo ""
 
-# Cek pip
-echo "[2/4] Mengecek pip..."
+# Check pip
+echo "[2/4] Checking pip..."
 if command -v pip3 &>/dev/null; then
-    echo -e "${GREEN}[OK] pip ditemukan${NC}"
+    echo -e "${GREEN}[OK] pip found${NC}"
     PIP_CMD="pip3"
 elif command -v pip &>/dev/null; then
-    echo -e "${GREEN}[OK] pip ditemukan${NC}"
+    echo -e "${GREEN}[OK] pip found${NC}"
     PIP_CMD="pip"
 else
-    echo -e "${RED}[ERROR] pip tidak ditemukan!${NC}"
+    echo -e "${RED}[ERROR] pip not found!${NC}"
     exit 1
 fi
 echo ""
 
 # Install requirements
-echo "[3/4] Menginstall dependencies..."
-echo "Ini akan memakan waktu beberapa saat..."
+echo "[3/4] Installing dependencies..."
+echo "This may take a moment..."
 $PIP_CMD install -r requirements.txt
 if [ $? -ne 0 ]; then
-    echo -e "${RED}[ERROR] Gagal menginstall dependencies!${NC}"
+    echo -e "${RED}[ERROR] Failed to install dependencies!${NC}"
     exit 1
 fi
-echo -e "${GREEN}[OK] Dependencies berhasil diinstall${NC}"
+echo -e "${GREEN}[OK] Dependencies installed successfully${NC}"
 echo ""
 
-# Buat folder untuk hasil
-echo "[4/4] Membuat folder untuk hasil..."
+# Create results folder
+echo "[4/4] Creating results folder..."
 if [ ! -d "results" ]; then
     mkdir results
 fi
-echo -e "${GREEN}[OK] Folder 'results' telah dibuat${NC}"
+echo -e "${GREEN}[OK] 'results' folder created${NC}"
 echo ""
 
 echo "========================================"
-echo "   SETUP SELESAI!"
+echo "   SETUP COMPLETE!"
 echo "========================================"
 echo ""
-echo "Jalankan program dengan:"
+echo "Run the program with:"
 echo "  ./start.sh"
 echo ""
